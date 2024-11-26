@@ -13,17 +13,17 @@ Please use this format for your User Stories assignations
 | User Stories     | P1 | P2 | P3 | P4 |
 | ---------------- | :---: | :---: |  :---:  |  :---:  |
 | 1: Grid          |   X   |       |         |         |
-| 2: Start/Stop    |       |   X   |         |         |
-| 3: Clear         |       |       |    X    |         |
-| 4: Randomize     |       |       |         |    X    |
-| 5: Generations   |       |       |    X    |         |
-| 6: Reset         |       |   X   |         |         |
+| 2: Start/Stop    |   X   |       |         |         |
+| 3: Clear         |       |       |         |         |
+| 4: Randomize     |   X   |       |         |         |
+| 5: Generations   |       |       |         |         |
+| 6: Reset         |   X   |       |         |         |
 
 | Other Works      | P1 | P2 | P3 | P4 |
 | ---------------- | :---: | :---: |  :---:  |  :---:  |
 | Game Logic       |   X   |       |         |         |
-| Bug fix          |   X   |   X   |         |         |
-| Style            |       |   X   |         |         |
+| Bug fix          |       |       |         |         |
+| Style            |   X   |       |         |         |
 
 # Live demo
 

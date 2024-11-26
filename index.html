@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+
+    <title>Juego de la Vida</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+<style>
+    body {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        font-family: 'Press Start 2P', cursive; 
+        height: 100vh;
+        overflow: hidden;
+        color: black;
+        background-size: 10px 10px; 
+    }
+
+    h1 {
+        margin-top: 70px;
+        font-size: 24px;
+        font-family: 'Press Start 2P', cursive;
+        color: black;
+    }
+
+    canvas {
+        border: 1px solid white;
+        cursor: default;
+    }
+
+    .contenedor-botones {
+        margin-top: 10px;
+        margin-bottom: 65px;
+    }
+
+    .btn {
+        cursor: pointer;
+        background: white; 
+        color: black; 
+        display: inline-block;
+        padding: 10px 15px;
+        margin: 5px;
+        text-align: center;
+        border-radius: 5px;
+        font-family: 'Press Start 2P', cursive; 
+        font-size: 14px;
+        transition: background 0.2s, color 0.2s;
+    }
+
+    .btn:hover {
+        background: black; 
+        color: white; 
+    }
+</style>
+
+<body>
+    <h1>Conway's Game of Life</h1>
+    <canvas id="canvas"></canvas> <!-- Crear elemento canvas -->
+
+    <div class="contenedor-botones">
+        <div id="playPauseBtn" class="btn" onclick="togglePlay()">Play</div> 
+        <div class="btn" onclick="randomize()">Random</div>
+        <div id="resetBtn" class="btn" onclick="resetGame()">Reset</div>
+    </div>
+</body>
+
+<script>
+        
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const cellSize = 25; 
+    const totalRows = 500; 
+    const totalCols = 500; 
+    let grid = createGrid(totalRows, totalCols); // Tablero total 500x500
+    let playing = false;
+    let offsetX = 0; 
+    let offsetY = 0; 
+    let isDragging = false; 
+
+    // Crear una matriz 2D vacía
+    function createGrid(rows, cols) {
+        return Array.from({ length: rows }, () => Array(cols).fill(0));
+    }
+
+    // Ajustar el tamaño de la cuadrícula visible
+    function resizeCanvas() {
+        const visibleCols = Math.floor(window.innerWidth / cellSize); 
+        const visibleRows = Math.floor(window.innerHeight / cellSize) - 5; 
+        canvas.width = visibleCols * cellSize;
+        canvas.height = visibleRows * cellSize;
+
+        // Recalcular el offset para centrar el canvas
+        offsetX = (totalCols - visibleCols) * cellSize / 2;
+        offsetY = (totalRows - visibleRows) * cellSize / 2;
+
+        drawGrid(); 
+    }
+
+    // Dibujar la cuadrícula en el canvas
+    function drawGrid() {
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const visibleCols = Math.floor(canvas.width / cellSize);
+        const visibleRows = Math.floor(canvas.height / cellSize);
+
+        // Dibujar solo la parte visible del tablero
+        for (let y = 0; y < visibleRows; y++) {
+            for (let x = 0; x < visibleCols; x++) {
+                const gridY = y + Math.floor(offsetY / cellSize);
+                const gridX = x + Math.floor(offsetX / cellSize);
+
+                if (gridY < totalRows && gridX < totalCols) {
+                    ctx.fillStyle = grid[gridY][gridX] ? 'black' : 'white';
+                    ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                    ctx.strokeStyle = '#212121'; 
+                    ctx.strokeRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                }
+            }
+        }
+    }
+
+    // Contar vecinos vivos de una celda
+    function countAliveNeighbors(x, y) {
+    
+        let count = 0;
+
+        for (let i = -1; i <= 1; i++) {
+            for (let j = -1; j <= 1; j++) {
+                if (i === 0 && j === 0) continue;
+
+                const nx = x + j;
+                const ny = y + i;
+
+                if (nx >= 0 && nx < totalCols && ny >= 0 && ny < totalRows) {
+                        count += grid[ny][nx];
+                }
+            }
+        }
+
+        return count;
+    }
+
+    // Calcular el siguiente estado
+    function nextState() {
+        
+        const newGrid = createGrid(totalRows, totalCols);
+
+        for (let y = 0; y < totalRows; y++) {
+            for (let x = 0; x < totalCols; x++) {
+                const aliveNeighbors = countAliveNeighbors(x, y);
+
+                if (grid[y][x]) {
+                    newGrid[y][x] = aliveNeighbors === 2 || aliveNeighbors === 3 ? 1 : 0;
+                } else {
+                    newGrid[y][x] = aliveNeighbors === 3 ? 1 : 0;
+                }
+            }
+        }
+
+        grid = newGrid;
+        drawGrid();
+   }
+
+    // Llenar la cuadrícula con un patrón aleatorio
+    function randomize() {
+        grid = createGrid(totalRows, totalCols).map(row => row.map(() => Math.random() < 0.2 ? 1 : 0));
+        drawGrid();
+    }
+
+    // Resetear la cuadrícula y el juego
+    function resetGame() {
+        grid = createGrid(totalRows, totalCols);
+        drawGrid();
+        playing = false;
+        document.getElementById("playPauseBtn").textContent = "Play";
+    }
+
+    // Alternar reproducción
+    function togglePlay() {
+        playing = !playing;
+
+        const playPauseBtn = document.getElementById("playPauseBtn");
+
+        if (playing) {
+            playPauseBtn.textContent = "Pause";
+            gameLoop();
+        } else {
+            playPauseBtn.textContent = "Play";
+        }
+    }
+
+    // Loop del juego
+    function gameLoop() {
+        if (playing) {
+            nextState();
+            requestAnimationFrame(gameLoop);
+        }
+    }
+
+    // Interacción con el canvas
+
+    canvas.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        canvas.style.cursor = 'grabbing';
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            offsetX -= e.movementX;
+            offsetY -= e.movementY;
+
+            // Limitar el desplazamiento horizontal y vertical
+            offsetX = Math.max(0, Math.min(offsetX, totalCols * cellSize - canvas.width));
+            offsetY = Math.max(0, Math.min(offsetY, totalRows * cellSize - canvas.height));
+
+            drawGrid();
+        }
+    });
+
+    canvas.addEventListener('mouseup', () => {
+        isDragging = false;
+        canvas.style.cursor = 'default';
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+        isDragging = false;
+        canvas.style.cursor = 'default';
+    });
+
+    // Interacción con el canvas para cambiar el estado de las celdas
+    canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = Math.floor((e.clientX - rect.left) / cellSize);
+        const y = Math.floor((e.clientY - rect.top) / cellSize);
+
+        const gridX = x + Math.floor(offsetX / cellSize);
+        const gridY = y + Math.floor(offsetY / cellSize);
+
+        if (gridX < totalCols && gridY < totalRows) {
+            grid[gridY][gridX] = grid[gridY][gridX] ? 0 : 1;
+            drawGrid();
+        }
+    });
+
+    // Redimensionar el canvas al cambiar el tamaño de la ventana
+    window.addEventListener('resize', resizeCanvas);
+
+    // Inicializar el juego
+    resizeCanvas();
+</script>
+
